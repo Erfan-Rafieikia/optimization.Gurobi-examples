@@ -53,14 +53,14 @@ This method effectively tackles large-scale CFLPs by decomposing them into small
 
 The master problem is responsible for selecting the optimal combination of facility locations to open, while also providing a lower bound on the overall cost. The master problem is a Mixed Integer Program (MIP) that aims to minimize total costs, which are composed of fixed costs for opening facilities and an auxiliary variable, $\eta$. The auxiliary variable $\eta$ serves as an underestimate for the optimal objective function value of the subproblem. Here's the refined formulation:
 
-$$
+```math
 \begin{align*}
-    \min \quad & \sum_{j \in J} f_{j} y_{j} + \eta \\
-    \text{subject to} \quad & \sum_{j \in J} u_{j} y_{j} \geq \sum_{i \in I} d_{i}, \quad \forall i \in I \\
-    & \eta \geq 0 \\
-    & y_{j} \in \{0, 1\}, \quad \forall j \in J
+    & \text{minimize} \quad && \sum_{j \in J} f_{j} y_{j} + \eta \\
+    & \text{subject to} \quad && \sum_{j \in J} u_{j} y_{j} \geq \sum_{i \in I} d_{i}, \quad \forall i \in I \\
+    &&& \eta \geq 0 \\
+    &&& y_{j} \in \{0, 1\}, \quad \forall j \in J
 \end{align*}
-$$
+```
 
 The primary constraint ensures that the sum of the capacities at all opened facilities is at least the total demand from all customers. This is a vital requirement that helps avoid any infeasibilities in the subproblem.
 
