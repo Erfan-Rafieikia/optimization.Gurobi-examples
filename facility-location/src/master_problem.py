@@ -1,6 +1,6 @@
+from callbacks import Callback
 from gurobipy import Model, GRB, quicksum
 
-from callback import Callback
 from data import Data
 
 
