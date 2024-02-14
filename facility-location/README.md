@@ -127,7 +127,8 @@ The callback function is defined and invoked by Gurobi at predefined points as t
 1. Optimality cuts are generated using the dual variables
 1. Cuts are added to the master problem as lazy constraints
 
-Using callbacks is crucial as it enables iterative enhancement of the model with optimality cuts in an efficient manner during runtime. This improves the solving process without needing to manually add all cuts a priori before solving.
+Callbacks allow us to dynamically add constraints during runtime. Optimality cuts can be added as *lazy* constraints, meaning that they are incorporated into the master problem only when they become violated during the branching process. This approach significantly reduces the branching tree size, resulting in faster convergence
+
 
 ### Project Files Overview
 
@@ -136,7 +137,7 @@ This project consists of the following key Python files:
 - `data.py`: Responsible for generating synthetic datasets for the CFLP. It allows the customization of problem instances according to user-defined parameters.
 - `main.py`: The entry point of the application. It demonstrates the process of setting up the problem, solving it using Benders decomposition, and displaying the results.
 - `master_problem.py`: Defines the master MIP using the `gurobipy` interface. It ncludes model setup, variables, objectives, constraints and `callback` function reference.
-- `callbacks.py`: Contains Callback class with a `call` method whish is invoked during the MIP solving process. It is where the Benders decomposition is implemented by adding optimality cuts.
+- `callbacks.py`: Contains Callback class with a `call` method which is invoked during the MIP solving process. It is where the Benders decomposition is implemented by adding optimality cuts.
 - `subproblem.py`: Contains the logic for solving the primal LP subproblem. It uses the current solution of the master problem and generates the solution tho the dual variables.
 - `requirements.txt`: Python dependencies list for easy reproducibility and environment setup.
 
