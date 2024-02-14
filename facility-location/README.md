@@ -1,8 +1,8 @@
 # Capacitated Facility Location Problem
 
-This repository provides a Python implementation of the Benders decomposition method for solving the Capacitated Facility Location Problem (CFLP) using the powerful Gurobi solver. The code is designed to be clear, modular, and easily adaptable to specific problem instances.
+This project provides a Python implementation of the Benders decomposition method for solving the Capacitated Facility Location Problem (CFLP) using the powerful Gurobi solver. The code is designed to be clear, modular, and easily adaptable to specific problem instances.
 
-## CFLP Overview:
+## CFLP Overview
 
 The Capacitated Facility Location Problem (CFLP) is a classic optimization problem that involves locating facilities and assigning customers to them, taking into account the capacity limitations of each facility. The objective is to minimize the total cost, which includes both fixed costs for opening facilities and variable costs for serving customers.
 
@@ -44,6 +44,89 @@ $$ \sum_{i \in I} x_{ij} \leq u_{j}\, y_{j},\ \forall j \in J$$
 
 $$x \in \mathbb{R}^{I \times J}_+,\ y \in \{0, 1\}^{J}$$
 
-### Benders Decomposition Approach
+## Benders Decomposition Approach
 
 This method effectively tackles large-scale CFLPs by decomposing them into smaller, more manageable subproblems. It operates through two main components: the master problem and the subproblem. These problems interact iteratively until the lower bounds converge to the true optimal solution.
+
+
+### Master Problem
+
+The master problem is responsible for selecting the optimal combination of facility locations to open, while also providing a lower bound on the overall cost. The master problem is a Mixed Integer Program (MIP) that aims to minimize total costs, which are composed of fixed costs for opening facilities and an auxiliary variable, $\eta$. The auxiliary variable $\eta$ serves as an underestimate for the optimal objective function value of the subproblem. Here's the refined formulation:
+
+$$
+\begin{align*}
+    \min \quad & \sum_{j \in J} f_{j} y_{j} + \eta \\
+    \text{subject to} \quad & \sum_{j \in J} u_{j} y_{j} \geq \sum_{i \in I} d_{i}, \quad \forall i \in I \\
+    & \eta \geq 0 \\
+    & y_{j} \in \{0, 1\}, \quad \forall j \in J
+\end{align*}
+$$
+
+The primary constraint ensures that the sum of the capacities at all opened facilities is at least the total demand from all customers. This is a vital requirement that helps avoid any infeasibilities in the subproblem.
+
+### Subproblem
+
+For a given set of open facilities specified by the solution $(\bar{y}, \bar{\eta})$ from the master problem, the subproblem focuses on the optimal distribution of customer demand. The subproblem is a Linear Program (LP) that minimizes the transportation costs associated with satisfying customer demands, under the facility openings proposed by $\bar{y}$. The subproblem is described as follows:
+
+$$
+\begin{align*}
+    \psi(\bar{y}) ={} & \min\ && \sum_{i \in I} \sum_{j \in J} c_{ij}\, x_{ij}\\
+    & \text{s.t.} && \sum_{j \in J} x_{ij} \geq d_{i},\ && \forall i \in I \\
+    &&& -\sum_{i \in I} x_{ij} \geq -u_{j}\, \bar{y}_{j},\ && \forall j \in J \\
+    &&& x_{ij} \geq 0, \ && \forall i \in I, \ j \in J
+\end{align*}
+$$
+
+The subproblem's role is to evaluate the cost-effectiveness of the candidate solution $\bar{y}$ from the master problem. If the subproblem's optimal cost, $\psi^*(\bar{y})$, exceeds $\bar{\eta}$, we must adjust our master problem through an optimality cut derived from the dual solution of the subproblem. Otherwise, if $\psi^*(\bar{y}) \leq \bar{\eta}$ for an incumbent $\bar{y}$, then $\bar{y}$ is an optimal decision for the original problem.
+
+### Generating Optimality Cuts
+
+After solving the master problem, an optimality cut is generated based on the optimal dual variable values from the subproblem. Let dual variables $\mu$ and $\nu$ correspond to the constraints related to demand satisfaction and facility capacity, respectively. The dual formulation is:
+
+$$
+\begin{align*}
+    & \max \ && \sum_{i \in I} d_{i} \mu_{i} - \sum_{j \in J} u_{j} \bar{y}_{j} \nu_{j} \\
+    & \text{s.t.} && \mu_{i} - \nu_{j} \leq c_{ij}, \ && \forall i \in I, \ j \in J \\
+    &&& \mu_{i} \geq 0, \ && \forall i \in I \\
+    &&& \nu_{j} \geq 0, \ && \forall j \in J.
+\end{align*}
+$$
+
+With $\mu^*$ and $\nu^*$ being the optimal values of the dual variables, the optimality cut is formulated as:
+
+$$
+\eta \geq \sum_{i \in I} d_{i} \mu^*_{i} - \sum_{j \in J} u_{j} \nu^*_{j} y_{j}
+$$
+
+This optimality cut is then added to the master problem to refine the search space of the solution and guide the optimization process closer to the optimum of the original problem.
+
+## Implementation
+
+We use the Gurobi Optimizer and its Python interface `gurobipy` to solve CFLP instances.
+An MIP model is created to represent the master problem of the CFLP. To incorporate Benders decomposition, we use the `callback` feature of Gurobi. This allows dynamic addition of Benders cuts to the model during the internal branch-and-bound optimization process.
+
+The callback function is defined and invoked by Gurobi at predefined points as the MIP is solved. Within this callback:
+
+1. The current solution of the master problem is obtained
+1. The subproblem is solved to obtain dual variables
+1. Optimality cuts are generated using the dual variables
+1. Cuts are added to the master problem as lazy constraints
+
+Using callbacks is crucial as it enables iterative enhancement of the model with optimality cuts in an efficient manner during runtime. This improves the solving process without needing to manually add all cuts a priori before solving.
+
+### Project Files Overview
+
+This project consists of the following key Python files:
+
+- `data.py`: Responsible for generating synthetic datasets for the CFLP. It allows the customization of problem instances according to user-defined parameters.
+- `main.py`: The entry point of the application. It demonstrates the process of setting up the problem, solving it using Benders decomposition, and displaying the results.
+- `master_problem.py`: Defines the master MIP using the `gurobipy` interface. It ncludes model setup, variables, objectives, constraints and `callback` function reference.
+- `callbacks.py`: Contains Callback class with a `call` method whish is invoked during the MIP solving process. It is where the Benders decomposition is implemented by adding optimality cuts.
+- `subproblem.py`: Contains the logic for solving the primal LP subproblem. It uses the current solution of the master problem and generates the solution tho the dual variables.
+- `requirements.txt`: Python dependencies list for easy reproducibility and environment setup.
+
+### References
+
+- Wentges, P. Accelerating Benders' decomposition for the capacitated facility location problem. *Mathematical Methods of Operations Research* **44**, 267–290 (1996). [DOI:10.1007/BF01194335](https://doi.org/10.1007/BF01194335)
+- [Gurobi Optimizer](https://www.gurobi.com/solutions/gurobi-optimizer/)
+- [GurobiPy](https://pypi.org/project/gurobipy/)
