@@ -140,8 +140,9 @@ This project consists of the following key Python files:
 - `subproblem.py`: Contains the logic for solving the primal LP subproblem. It uses the current solution of the master problem and generates the solution tho the dual variables.
 - `requirements.txt`: Python dependencies list for easy reproducibility and environment setup.
 
-### References
+## References
 
 - Wentges, P. Accelerating Benders' decomposition for the capacitated facility location problem. *Mathematical Methods of Operations Research* **44**, 267–290 (1996). [DOI:10.1007/BF01194335](https://doi.org/10.1007/BF01194335)
+- [Benders Decomposition](https://en.wikipedia.org/wiki/Benders_decomposition)
 - [Gurobi Optimizer](https://www.gurobi.com/solutions/gurobi-optimizer/)
 - [GurobiPy](https://pypi.org/project/gurobipy/)
