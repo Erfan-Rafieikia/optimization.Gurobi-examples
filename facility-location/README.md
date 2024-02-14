@@ -107,10 +107,10 @@ After solving the master problem, an optimality cut is generated based on the op
 \end{align*}
 ```
 
-With $\mu^{*}$ and $\nu^{*}$ being the optimal values of the dual variables, the optimality cut is formulated as:
+With $\mu^{o}$ and $\nu^{o}$ being the optimal values of the dual variables, the optimality cut is formulated as:
 
 ```math
-\eta \geq \sum_{i \in I} \mu^*_{i} d_{i} - \sum_{j \in J} \nu^*_{j} u_{j}\, y_{j}
+\eta \geq \sum_{i \in I} \mu^{o}_{i} d_{i} - \sum_{j \in J} \nu^{o}_{j} u_{j}\, y_{j}
 ```
 
 This optimality cut is then added to the master problem to refine the search space of the solution and guide the optimization process closer to the optimum of the original problem.
