@@ -1,10 +1,17 @@
-# Capacitated Facility Location Problem
+# Benders Decomposition for The Capacitated Facility Location Problem
 
-This project provides a Python implementation of the Benders decomposition method for solving the Capacitated Facility Location Problem (CFLP) using the powerful Gurobi solver. The code is designed to be clear, modular, and easily adaptable to specific problem instances.
+This project offers a Python implementation of Benders decomposition to tackle the Capacitated Facility Location Problem (CFLP) using the powerful Gurobi Optimizer.
+The code showcases an effective approach to model the CFLP as a Mixed Integer Program (MIP) and efficiently solve it through Benders decomposition, leveraging Gurobi's callback functionality.
+
+Key features of this implementation include:
+
+- A modular and customizable structure that allows easy configuration of the CFLP formulation for various problem parameters and sizes.
+- A pedagogical reference for integrating the Gurobi optimizer, formulating advanced MIP models, and applying Benders decomposition.
+- An emphasis on Python-based modeling and solution techniques for facility location decisions
 
 ## CFLP Overview
 
-The Capacitated Facility Location Problem (CFLP) is a classic optimization problem that involves locating facilities and assigning customers to them, taking into account the capacity limitations of each facility. The objective is to minimize the total cost, which includes both fixed costs for opening facilities and variable costs for serving customers.
+The CFLP is a classic optimization problem that involves locating facilities and assigning customers to them, taking into account the capacity limitations of each facility. The objective is to minimize the total cost, which includes both fixed costs for opening facilities and variable costs for serving customers.
 
 ### Mathematical Formulation:
 
@@ -81,7 +88,7 @@ For a given set of open facilities specified by the solution $(\bar{y}, \bar{\et
     \psi(\bar{y}) ={} & \min\ && \sum_{i \in I} \sum_{j \in J} c_{ij}\, x_{ij}\\
     & \text{s.t.} && \sum_{j \in J} x_{ij} \geq d_{i},\ && \forall i \in I \\
     &&& -\sum_{i \in I} x_{ij} \geq -u_{j}\, \bar{y}_{j},\ && \forall j \in J \\
-    &&& x_{ij} \geq 0, \ && \forall i \in I, \ j \in J
+    &&& x_{ij} \geq 0, \ && \forall i \in I, \ j \in J.
 \end{align*}
 ```
 
