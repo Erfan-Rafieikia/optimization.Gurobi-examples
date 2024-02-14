@@ -49,7 +49,7 @@ The objective is to minimize the total cost, which includes both fixed costs for
 - Variable domains:
 
 ```math
-x \in \mathbb{R}^{I \times J}_+,\ y \in \{0, 1\}^{J}
+x \in \mathbb{R}^{I \times J}_+,\ y \in \{0, 1\}^{J}.
 ```
 
 ## Benders Decomposition Approach
@@ -66,7 +66,7 @@ The master problem is responsible for selecting the optimal combination of facil
     & \min \quad && \sum_{j \in J} f_{j}\, y_{j} + \eta \\
     & \text{subject to} \quad && \sum_{j \in J} u_{j}\, y_{j} \geq \sum_{i \in I} d_{i}, \ && \forall i \in I \\
     &&& \eta \geq 0 \\
-    &&& y_{j} \in \{0, 1\}, \ && \forall j \in J
+    &&& y_{j} \in \{0, 1\}, \ && \forall j \in J.
 \end{align*}
 ```
 
@@ -93,7 +93,7 @@ After solving the master problem, an optimality cut is generated based on the op
 
 ```math
 \begin{align*}
-    & \max \ && \sum_{i \in I} d_{i} \mu_{i} - \sum_{j \in J} u_{j} \bar{y}_{j} \nu_{j} \\
+    & \max \ && \sum_{i \in I} d_{i}\, \mu_{i} - \sum_{j \in J} u_{j} \bar{y}_{j}\, \nu_{j} \\
     & \text{s.t.} && \mu_{i} - \nu_{j} \leq c_{ij}, \ && \forall i \in I, \ j \in J \\
     &&& \mu_{i} \geq 0, \ && \forall i \in I \\
     &&& \nu_{j} \geq 0, \ && \forall j \in J.
@@ -103,7 +103,7 @@ After solving the master problem, an optimality cut is generated based on the op
 With $\mu^*$ and $\nu^*$ being the optimal values of the dual variables, the optimality cut is formulated as:
 
 ```math
-\eta \geq \sum_{i \in I} d_{i} \mu^*_{i} - \sum_{j \in J} u_{j} \nu^*_{j} y_{j}
+\eta \geq \sum_{i \in I} \mu^*_{i} d_{i} - \sum_{j \in J} \nu^*_{j} u_{j}\, y_{j}
 ```
 
 This optimality cut is then added to the master problem to refine the search space of the solution and guide the optimization process closer to the optimum of the original problem.
