@@ -13,7 +13,7 @@ Key features of this implementation include:
 
 The CFLP is a classic optimization problem that involves locating facilities and assigning customers to them, taking into account the capacity limitations of each facility. The objective is to minimize the total cost, which includes both fixed costs for opening facilities and variable costs for serving customers.
 
-### Mathematical Formulation:
+### Mathematical Formulation
 
 The CFLP can be formulated as a mixed-integer linear program (MIP) with the following notations:
 
@@ -107,7 +107,7 @@ After solving the master problem, an optimality cut is generated based on the op
 \end{align*}
 ```
 
-With $\mu^*$ and $\nu^*$ being the optimal values of the dual variables, the optimality cut is formulated as:
+With $\mu^{*}$ and $\nu^{*}$ being the optimal values of the dual variables, the optimality cut is formulated as:
 
 ```math
 \eta \geq \sum_{i \in I} \mu^*_{i} d_{i} - \sum_{j \in J} \nu^*_{j} u_{j}\, y_{j}
