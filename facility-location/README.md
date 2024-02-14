@@ -28,21 +28,29 @@ The CFLP can be formulated as a mixed-integer linear program (MIP) with the foll
 
 The objective is to minimize the total cost, which includes both fixed costs for opening facilities and variable costs for serving customers:
 
-$$\text{minimize} \quad \sum_{j \in J} f_{j}\, y_{j} + \sum_{i \in I} \sum_{j \in J} c_{ij}\, x_{ij}$$
+```math
+\text{minimize} \quad \sum_{j \in J} f_{j}\, y_{j} + \sum_{i \in I} \sum_{j \in J} c_{ij}\, x_{ij}
+```
 
 #### Constraints:
 
 - Demand satisfaction constraint: Each customer's demand must be fully served. 
 
-$$ \sum_{j \in J} x_{ij} \geq d_{i},\ \forall i \in I$$
+```math
+\sum_{j \in J} x_{ij} \geq d_{i},\ \forall i \in I
+```
 
 - Capacity constraint: If a facility is open, the total supply from that facility should not exceed its capacity. If a facility is closed, no supply should be made. 
 
-$$ \sum_{i \in I} x_{ij} \leq u_{j}\, y_{j},\ \forall j \in J$$
+```math
+\sum_{i \in I} x_{ij} \leq u_{j}\, y_{j},\ \forall j \in J
+```
 
 - Variable domains:
 
-$$x \in \mathbb{R}^{I \times J}_+,\ y \in \{0, 1\}^{J}$$
+```math
+x \in \mathbb{R}^{I \times J}_+,\ y \in \{0, 1\}^{J}
+```
 
 ## Benders Decomposition Approach
 
@@ -68,14 +76,14 @@ The primary constraint ensures that the sum of the capacities at all opened faci
 
 For a given set of open facilities specified by the solution $(\bar{y}, \bar{\eta})$ from the master problem, the subproblem focuses on the optimal distribution of customer demand. The subproblem is a Linear Program (LP) that minimizes the transportation costs associated with satisfying customer demands, under the facility openings proposed by $\bar{y}$. The subproblem is described as follows:
 
-$$
+```math
 \begin{align*}
     \psi(\bar{y}) ={} & \min\ && \sum_{i \in I} \sum_{j \in J} c_{ij}\, x_{ij}\\
     & \text{s.t.} && \sum_{j \in J} x_{ij} \geq d_{i},\ && \forall i \in I \\
     &&& -\sum_{i \in I} x_{ij} \geq -u_{j}\, \bar{y}_{j},\ && \forall j \in J \\
     &&& x_{ij} \geq 0, \ && \forall i \in I, \ j \in J
 \end{align*}
-$$
+```
 
 The subproblem's role is to evaluate the cost-effectiveness of the candidate solution $\bar{y}$ from the master problem. If the subproblem's optimal cost, $\psi^*(\bar{y})$, exceeds $\bar{\eta}$, we must adjust our master problem through an optimality cut derived from the dual solution of the subproblem. Otherwise, if $\psi^*(\bar{y}) \leq \bar{\eta}$ for an incumbent $\bar{y}$, then $\bar{y}$ is an optimal decision for the original problem.
 
@@ -83,20 +91,20 @@ The subproblem's role is to evaluate the cost-effectiveness of the candidate sol
 
 After solving the master problem, an optimality cut is generated based on the optimal dual variable values from the subproblem. Let dual variables $\mu$ and $\nu$ correspond to the constraints related to demand satisfaction and facility capacity, respectively. The dual formulation is:
 
-$$
+```math
 \begin{align*}
     & \max \ && \sum_{i \in I} d_{i} \mu_{i} - \sum_{j \in J} u_{j} \bar{y}_{j} \nu_{j} \\
     & \text{s.t.} && \mu_{i} - \nu_{j} \leq c_{ij}, \ && \forall i \in I, \ j \in J \\
     &&& \mu_{i} \geq 0, \ && \forall i \in I \\
     &&& \nu_{j} \geq 0, \ && \forall j \in J.
 \end{align*}
-$$
+```
 
 With $\mu^*$ and $\nu^*$ being the optimal values of the dual variables, the optimality cut is formulated as:
 
-$$
+```math
 \eta \geq \sum_{i \in I} d_{i} \mu^*_{i} - \sum_{j \in J} u_{j} \nu^*_{j} y_{j}
-$$
+```
 
 This optimality cut is then added to the master problem to refine the search space of the solution and guide the optimization process closer to the optimum of the original problem.
 
