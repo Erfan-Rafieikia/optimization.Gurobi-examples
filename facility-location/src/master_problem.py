@@ -1,7 +1,16 @@
-from callbacks import Callback
-from gurobipy import Model, GRB, quicksum
+from dataclasses import dataclass
 
+from callbacks import Callback
 from data import Data
+from gurobipy import GRB, Model, quicksum
+
+
+@dataclass
+class Solution:
+    objective_value: float
+    locations: list
+    solution_time: float
+    num_cuts: int
 
 
 def __set_params(mod: Model):
@@ -12,56 +21,64 @@ def __set_params(mod: Model):
         mod (Model): The Gurobi model for which the parameters are being set.
     """
 
-    # Turn on lazy constraints adaptation (for optimality cuts)
+    # Enable lazy constraint adaptation for optimality cuts
     mod.Params.LazyConstraints = 1
 
+    # Use the following to set a time limit for the solver
+    # mod.Params.TimeLimit = 60.0
 
-def solve_CFLP(dat: Data) -> tuple:
+
+def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
     """
     Creates and solves the master problem for the capacitated facility location problem.
 
     Args:
         dat (Data): The input data for the problem.
+        write_mp_lp (bool, optional): Whether to write the model of the initial master problem to an LP file. Defaults to False.
 
     Returns:
-        tuple: A tuple containing the objective value and the optimal solution.
+        Solution: An object containing the objective value, optimal locations, solution time, and number of cuts.
     """
 
     # Create a Gurobi model for the master problem
     with Model("FLP_Master") as mod:
-        # set Gurobi parameters
+        # Set Gurobi parameters
         __set_params(mod)
 
-        # create decision variables
+        # Create decision variables
         y = mod.addVars(dat.J, vtype=GRB.BINARY, name="y")
         eta = mod.addVar(name="eta")
 
-        # set the objective function
-        # $\min \sum_{j \in J} f_j y_j + \eta$
+        # Set the objective function: minimize the sum of fixed costs and eta
         expr = quicksum(dat.fixed_costs[j] * y[j] for j in dat.J) + eta
         mod.setObjective(expr, sense=GRB.MINIMIZE)
 
-        # add feasibility constraint
-        # allocate enough capacity to meet all demands
-        # $\sum_{j \in J} u_j y_j \leq \sum_{i \in I} d_i$
+        # Add feasibility constraint: allocate enough capacity to meet all demands
         mod.addConstr(
             (quicksum(dat.capacities[j] * y[j] for j in dat.J) >= dat.demands.sum()),
             name="Feasibility",
         )
 
-        # create callback object
+        # Create callback object
         callback = Callback(dat, y, eta)
 
-        # Write the model
-        # mod.write("mp.lp")
+        # Write the model to an LP file if specified
+        if write_mp_lp:
+            mod.write("mp.lp")
 
-        # solve the model using the callback
+        # Solve the model using the callback
         mod.optimize(callback)
 
-        # get the objective value
+        # Get the objective value
         obj = mod.ObjVal
 
-        # get the optimal solution
+        # Get the solution time
+        sol_time = round(mod.Runtime, 2)
+
+        # Get the optimal solution
         y_values = [y[j].X for j in dat.J]
 
-    return (obj, y_values)
+        # Get the number of cuts
+        num_cuts = callback.num_cuts
+
+    return Solution(obj, y_values, sol_time, num_cuts)
