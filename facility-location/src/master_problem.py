@@ -45,7 +45,7 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
         # Set Gurobi parameters
         __set_params(mod)
 
-        # Create decision variables
+        # Create decision variables consisting of location variables and cost variable
         y = mod.addVars(dat.J, vtype=GRB.BINARY, name="y")
         eta = mod.addVar(name="eta")
 
@@ -64,7 +64,7 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
 
         # Write the model to an LP file if specified
         if write_mp_lp:
-            mod.write("mp.lp")
+            mod.write(f"{mod.ModelName}.lp")
 
         # Solve the model using the callback
         mod.optimize(callback)
