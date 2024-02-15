@@ -5,8 +5,16 @@ from sub_problem import solve_subproblem
 
 class Callback:
     """
-    Callback class implementing Benders optimality cuts for the CFLP. At MIPSOL
-    callbacks, solutions are evaluated and lazy optimality cuts are added if needed.
+    Callback class for implementing Benders' decomposition optimality cuts in the
+    Capacitated Facility Location Problem (CFLP). This class is designed to interface
+    with the Gurobi optimizer and is invoked during the Mixed-Integer Programming
+    (MIP) solution process. The class method is called at MIPSOL (MIP solution) callback
+    events to assess newly found integer feasible solutions and to inject lazy optimality
+    cuts as needed. These cuts are used to refine the solution space and guide the solver
+    towards optimality by eliminating sub-optimal solutions.
+
+    For more information on callback codes, please refer to the Gurobi documentation:
+    https://www.gurobi.com/documentation/current/refman/cb_codes.html
     """
 
     def __init__(self, dat: Data, y, eta):
@@ -75,8 +83,8 @@ class Callback:
         rhs = quicksum(self.dat.demands[i] * mu[i] for i in self.dat.I)
         rhs -= quicksum(self.dat.capacities[j] * nu[j] * self.y[j] for j in self.dat.J)
 
-        # Add the optimality cut to the model as a lazy constraint. Lazy constraints are added to the model
-        # only when they are violated by the current integer solution. This helps in reducing the size of the model
-        # and speeds up the solving process.
-        # The cut ensures that the cost represented by 'eta' is no less than the cost identified by the dual values.
+        # Add the optimality cut to the model as a lazy constraint. The cut ensures that the cost represented
+        # by 'eta' is no less than the cost identified by the dual values.
+        # Lazy constraints are added to the model only when they are violated by the current integer solution.
+        # This helps in reducing the size of the model and speeds up the solving process.
         mod.cbLazy(self.eta >= rhs)
