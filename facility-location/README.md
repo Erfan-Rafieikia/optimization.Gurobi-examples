@@ -70,8 +70,8 @@ The master problem is responsible for selecting the optimal combination of facil
 
 ```math
 \begin{align*}
-    & \min \quad && \sum_{j \in J} f_{j}\, y_{j} + \eta \\
-    & \text{subject to} \quad && \sum_{j \in J} u_{j}\, y_{j} \geq \sum_{i \in I} d_{i}, \ && \forall i \in I \\
+    & \text{minimize} \  && \sum_{j \in J} f_{j}\, y_{j} + \eta \\
+    & \text{subject to} \  && \sum_{j \in J} u_{j}\, y_{j} \geq \sum_{i \in I} d_{i}, \ && \forall i \in I \\
     &&& \eta \geq 0 \\
     &&& y_{j} \in \{0, 1\}, \ && \forall j \in J.
 \end{align*}
@@ -92,7 +92,7 @@ For a given set of open facilities specified by the solution $(\bar{y}, \bar{\et
 \end{align*}
 ```
 
-The subproblem's role is to evaluate the cost-effectiveness of the candidate solution $\bar{y}$ from the master problem. If the subproblem's optimal cost, $\psi^*(\bar{y})$, exceeds $\bar{\eta}$, we must adjust our master problem through an optimality cut derived from the dual solution of the subproblem. Otherwise, if $\psi^*(\bar{y}) \leq \bar{\eta}$ for an incumbent $\bar{y}$, then $\bar{y}$ is an optimal decision for the original problem.
+The subproblem's role is to evaluate the cost-effectiveness of the candidate solution $\bar{y}$ from the master problem. If the subproblem's optimal cost, $\psi^\ast(\bar{y})$, exceeds $\bar{\eta}$, we must adjust our master problem through an optimality cut derived from the dual solution of the subproblem. Otherwise, if $\psi^\ast(\bar{y}) \leq \bar{\eta}$ for an incumbent $\bar{y}$, then $\bar{y}$ is an optimal decision for the original problem.
 
 ### Generating Optimality Cuts
 
@@ -107,10 +107,10 @@ After solving the master problem, an optimality cut is generated based on the op
 \end{align*}
 ```
 
-With $\mu^{o}$ and $\nu^{o}$ being the optimal values of the dual variables, the optimality cut is formulated as:
+With $\mu^\ast$ and $\nu^\ast$ being the optimal values of the dual variables, the optimality cut is formulated as:
 
 ```math
-\eta \geq \sum_{i \in I} \mu^{o}_{i} d_{i} - \sum_{j \in J} \nu^{o}_{j} u_{j}\, y_{j}
+\eta \geq \sum_{i \in I} \mu^\ast_{i} d_{i} - \sum_{j \in J} \nu^\ast_{j} u_{j}\, y_{j}
 ```
 
 This optimality cut is then added to the master problem to refine the search space of the solution and guide the optimization process closer to the optimum of the original problem.
