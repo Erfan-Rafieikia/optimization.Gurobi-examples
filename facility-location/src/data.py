@@ -4,9 +4,9 @@ import numpy as np
 
 SEED = 2024  # random seed for reproducibility
 
-DEMANDS = (1, 101)  # the range of customer demands
-CAPACITIES = (500, 1001)  # the range of facility capacities
-FIXED_COSTS = (1000, 5001)  # the range of facility fixed costs
+DEMANDS = (1, 100)  # the range of customer demands
+CAPACITIES = (500, 1000)  # the range of facility capacities
+FIXED_COSTS = (2000, 5000)  # the range of facility fixed costs
 SHIPMENT_COSTS = (1, 10)  # the range of shipment costs
 
 
@@ -14,10 +14,10 @@ SHIPMENT_COSTS = (1, 10)  # the range of shipment costs
 class Data:
     I: np.ndarray  # customer index list
     J: np.ndarray  # facility index list
-    demands: np.ndarray
-    capacities: np.ndarray
-    fixed_costs: np.ndarray
-    shipment_costs: np.ndarray
+    demands: np.ndarray  # customer demands (integers)
+    capacities: np.ndarray  # facility capacities (integers)
+    fixed_costs: np.ndarray  # facility opening costs (floats)
+    shipment_costs: np.ndarray  # transshipment costs (floats)
 
 
 def generate_random_instance(num_customers, num_facilities):
@@ -37,14 +37,16 @@ def generate_random_instance(num_customers, num_facilities):
     I = np.arange(num_customers)
     J = np.arange(num_facilities)
 
-    demands = np.random.randint(low=DEMANDS[0], high=DEMANDS[1], size=num_customers)
-    capacities = np.random.randint(low=CAPACITIES[0], high=CAPACITIES[1], size=num_facilities)
-    fixed_costs = np.random.uniform(low=FIXED_COSTS[0], high=FIXED_COSTS[1], size=num_facilities)
+    demands = np.random.randint(low=DEMANDS[0], high=DEMANDS[1] + 1, size=num_customers)
+    capacities = np.random.randint(low=CAPACITIES[0], high=CAPACITIES[1] + 1, size=num_facilities)
+    fixed_costs = np.random.uniform(
+        low=FIXED_COSTS[0], high=FIXED_COSTS[1], size=num_facilities
+    ).round(2)
 
     # Create a cost matrix
     shipment_costs = np.random.uniform(
         low=SHIPMENT_COSTS[0], high=SHIPMENT_COSTS[1], size=(num_customers, num_facilities)
-    )
+    ).round(2)
 
     return Data(
         I=I,
