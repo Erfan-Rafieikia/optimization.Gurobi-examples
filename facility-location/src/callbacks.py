@@ -1,6 +1,5 @@
-from gurobipy import GRB, quicksum
-
 from data import Data
+from gurobipy import GRB, quicksum
 from sub_problem import solve_subproblem
 
 
@@ -14,6 +13,8 @@ class Callback:
         self.dat = dat
         self.y = y
         self.eta = eta
+
+        self.num_cuts = 0  # number of optimality cuts added
 
     def __call__(self, mod, where):
         """
@@ -39,6 +40,7 @@ class Callback:
             # add an optimality cut if needed
             if obj > eta_value:
                 self.add_optimality_cut(mod, mu, nu)
+                self.num_cuts += 1
 
     def add_optimality_cut(self, mod, mu, nu):
         """
@@ -56,4 +58,5 @@ class Callback:
         lhs = quicksum(self.dat.capacities[j] * nu[j] * self.y[j] for j in self.dat.J) + self.eta
         rhs = sum(self.dat.demands[i] * mu[i] for i in self.dat.I)
 
+        # ads the optimality cut as a lazy constraint
         mod.cbLazy(lhs >= rhs)
