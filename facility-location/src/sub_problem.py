@@ -1,62 +1,61 @@
-from gurobipy import GRB, Model, quicksum
-
 from data import Data
+from gurobipy import GRB, Model, quicksum, tupledict
 
 
-def __set_params(mod: Model):
+def __set_params(model: Model) -> None:
+    """Set the parameters for the Gurobi solver to suppress console output."""
+    model.Params.OutputFlag = 0
+
+
+def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
     """
-    Set the parameters of the Gurobi solver.
+    Solve the subproblem for the Facility Location Problem (FLP).
+
+    This function defines and optimizes the subproblem given the facility open decisions.
+    It calculates the optimal shipment quantities from facilities to customers minimizing
+    the total shipment costs while satisfying demand and capacity constraints.
 
     Args:
-        mod (Model): The Gurobi model for which the parameters are being set.
+        data (Data): The input data containing costs, demands, and capacities.
+        facility_open (tupledict): A dictionary with facility indices as keys and binary
+                                   decisions (1 if open, 0 if closed) as values.
 
     Returns:
-        None
+        tuple: A tuple containing the objective value, dual values for demand constraints
+               (mu), and dual values for capacity constraints (nu).
     """
 
-    mod.Params.OutputFlag = 0  # turn off output
+    with Model("FLP_Sub") as model:
+        __set_params(model)
 
+        # Decision variables for shipment quantities from facilities to customers
+        x = model.addVars(dat.I, dat.J, name="x")
 
-def solve_subproblem(dat: Data, y_value) -> tuple:
-    with Model("FLP_Sub") as mod:
-        # set Gurobi parameters
-        __set_params(mod)
+        # Objective: Minimize total shipment costs
+        total_cost = quicksum(dat.shipment_costs[i, j] * x[i, j] for i in dat.I for j in dat.J)
+        model.setObjective(total_cost, GRB.MINIMIZE)
 
-        # create decision variables
-        # $x_{ij}$ is the amount of goods shipped from facility $j$ to customer $i$
-        x = mod.addVars(dat.I, dat.J, name="x")
-
-        # set the objective function
-        # $\min \sum_{i \in I} \sum_{j \in J} c_{ij} x_{ij}$
-        expr = quicksum(dat.shipment_costs[i, j] * x[i, j] for i in dat.I for j in dat.J)
-        mod.setObjective(expr, GRB.MINIMIZE)
-
-        # Add constraints
-        # demand satisfaction
-        # $\sum_{j \in J} x_{ij} \geq d_i$ for all $i \in I$
-        demand_constraints = mod.addConstrs(
+        # Constraints: Satisfy demand for each customer
+        demand_constraints = model.addConstrs(
             (quicksum(x[i, j] for j in dat.J) >= dat.demands[i] for i in dat.I),
             name="Demand",
         )
 
-        # capacity limit
-        # $\sum_{i \in I} x_{ij} \leq u_j y_j$ for all $j \in J$
-        capacity_constraints = mod.addConstrs(
-            (quicksum(x[i, j] for i in dat.I) <= dat.capacities[j] * y_value[j] for j in dat.J),
+        # Constraints: Do not exceed capacity for open facilities
+        capacity_constraints = model.addConstrs(
+            (
+                quicksum(x[i, j] for i in dat.I) <= dat.capacities[j] * facility_open[j]
+                for j in dat.J
+            ),
             name="Capacity",
         )
 
-        # Write the model
-        # mod.write("sp.lp")
+        # Optimize the model to find the best shipment plan
+        model.optimize()
 
-        # solve the model
-        mod.optimize()
+        # Retrieve the objective value and dual values from optimized model
+        objective_value = model.ObjVal
+        mu_values = [demand_constraints[i].Pi for i in dat.I]
+        nu_values = [capacity_constraints[j].Pi for j in dat.J]
 
-        # get the objective value
-        obj = mod.ObjVal
-
-        # retrieve dual values
-        mu = [demand_constraints[i].Pi for i in dat.I]
-        nu = [capacity_constraints[j].Pi for j in dat.J]
-
-    return (obj, mu, nu)
+    return objective_value, mu_values, nu_values

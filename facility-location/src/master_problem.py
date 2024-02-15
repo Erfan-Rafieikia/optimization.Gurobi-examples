@@ -45,13 +45,18 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
         # Set Gurobi parameters
         __set_params(mod)
 
-        # Create decision variables consisting of location variables and cost variable
+        # Decision variables:
+        # y[j]: binary location variables indicating whether to open facility
+        # at location j (1) or not (0)
         y = mod.addVars(dat.J, vtype=GRB.BINARY, name="y")
+
+        # eta: continuous cost variable representing the total transportation
+        # cost from facilities to customers
         eta = mod.addVar(name="eta")
 
         # Set the objective function: minimize the sum of fixed costs and eta
-        expr = quicksum(dat.fixed_costs[j] * y[j] for j in dat.J) + eta
-        mod.setObjective(expr, sense=GRB.MINIMIZE)
+        total_cost = quicksum(dat.fixed_costs[j] * y[j] for j in dat.J) + eta
+        mod.setObjective(total_cost, sense=GRB.MINIMIZE)
 
         # Add feasibility constraint: allocate enough capacity to meet all demands
         mod.addConstr(
