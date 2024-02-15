@@ -25,24 +25,24 @@ def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
                (mu), and dual values for capacity constraints (nu).
     """
 
-    with Model("FLP_Sub") as model:
-        __set_params(model)
+    with Model("FLP_Sub") as mod:
+        __set_params(mod)
 
         # Decision variables for shipment quantities from facilities to customers
-        x = model.addVars(dat.I, dat.J, name="x")
+        x = mod.addVars(dat.I, dat.J, name="x")
 
         # Objective: Minimize total shipment costs
         total_cost = quicksum(dat.shipment_costs[i, j] * x[i, j] for i in dat.I for j in dat.J)
-        model.setObjective(total_cost, GRB.MINIMIZE)
+        mod.setObjective(total_cost, GRB.MINIMIZE)
 
         # Constraints: Satisfy demand for each customer
-        demand_constraints = model.addConstrs(
+        demand_constraints = mod.addConstrs(
             (quicksum(x[i, j] for j in dat.J) >= dat.demands[i] for i in dat.I),
             name="Demand",
         )
 
         # Constraints: Do not exceed capacity for open facilities
-        capacity_constraints = model.addConstrs(
+        capacity_constraints = mod.addConstrs(
             (
                 quicksum(x[i, j] for i in dat.I) <= dat.capacities[j] * facility_open[j]
                 for j in dat.J
@@ -51,11 +51,11 @@ def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
         )
 
         # Optimize the model to find the best shipment plan
-        model.optimize()
+        mod.optimize()
 
         # Retrieve the objective value and dual values from optimized model
-        objective_value = model.ObjVal
-        mu_values = [demand_constraints[i].Pi for i in dat.I]
-        nu_values = [capacity_constraints[j].Pi for j in dat.J]
+        objective_value = mod.ObjVal
+        mu_values = mod.getAttr("pi", demand_constraints)
+        nu_values = mod.getAttr("pi", capacity_constraints)
 
     return objective_value, mu_values, nu_values

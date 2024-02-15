@@ -81,7 +81,7 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
         sol_time = round(mod.Runtime, 2)
 
         # Get the optimal solution
-        y_values = [y[j].X for j in dat.J]
+        y_values = mod.getAttr("x", y)
 
         # Get the number of cuts
         num_cuts = callback.num_cuts
