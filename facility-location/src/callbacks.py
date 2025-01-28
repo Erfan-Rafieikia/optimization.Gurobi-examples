@@ -81,7 +81,7 @@ class Callback:
         # of demands and dual variables for demand constraints ('mu'), minus the product sum of
         # capacities, dual variables for capacity constraints ('nu'), and the location variables 'y'.
         rhs = quicksum(self.dat.demands[i] * mu[i] for i in self.dat.I)
-        rhs -= quicksum(self.dat.capacities[j] * nu[j] * self.y[j] for j in self.dat.J)
+        rhs += quicksum(self.dat.capacities[j] * nu[j] * self.y[j] for j in self.dat.J)
 
         # Add the optimality cut to the model as a lazy constraint. The cut ensures that the cost represented
         # by 'eta' is no less than the cost identified by the dual values.
