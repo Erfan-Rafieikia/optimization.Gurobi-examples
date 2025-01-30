@@ -2,7 +2,7 @@ from data import Data
 from gurobipy import GRB, Model, quicksum, tupledict
 
 
-def __set_params(model: Model) -> None:
+def _set_params(model: Model) -> None:
     """Set the parameters for the Gurobi solver to suppress console output."""
     model.Params.OutputFlag = 0
 
@@ -16,7 +16,7 @@ def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
     the total shipment costs while satisfying demand and capacity constraints.
 
     Args:
-        data (Data): The input data containing costs, demands, and capacities.
+        dat (Data): The input data containing costs, demands, and capacities.
         facility_open (tupledict): A dictionary with facility indices as keys and binary
                                    decisions (1 if open, 0 if closed) as values.
 
@@ -26,7 +26,7 @@ def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
     """
 
     with Model("FLP_Sub") as mod:
-        __set_params(mod)
+        _set_params(mod)
 
         # Decision variables for shipment quantities from facilities to customers
         x = mod.addVars(dat.I, dat.J, name="x")
