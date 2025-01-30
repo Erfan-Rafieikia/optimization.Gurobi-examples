@@ -11,9 +11,10 @@ class Solution:
     locations: list
     solution_time: float
     num_cuts: int
+    num_bnb_nodes: int = 0
 
 
-def __set_params(mod: Model):
+def _set_params(mod: Model):
     """
     Set the parameters of the Gurobi solver.
 
@@ -43,7 +44,7 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
     # Create a Gurobi model for the master problem
     with Model("FLP_Master") as mod:
         # Set Gurobi parameters
-        __set_params(mod)
+        _set_params(mod)
 
         # Decision variables:
         # y[j]: binary location variables indicating whether to open facility
@@ -86,4 +87,7 @@ def solve_CFLP(dat: Data, write_mp_lp=False) -> Solution:
         # Get the number of cuts
         num_cuts = callback.num_cuts
 
-    return Solution(obj, y_values, sol_time, num_cuts)
+        # Get the number of explored Branch-and-Bound nodes
+        num_bnb_nodes = int(mod.NodeCount)
+
+    return Solution(obj, y_values, sol_time, num_cuts, num_bnb_nodes)
