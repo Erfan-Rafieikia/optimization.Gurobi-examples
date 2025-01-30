@@ -17,5 +17,6 @@ if __name__ == "__main__":
     print("Objective value:    ", solution.objective_value)
     print("Open facilities:    ", [j for j in data.J if solution.locations[j] > 0.5])
     print("Solution time (sec):", solution.solution_time)
-    print("No. of optimality cuts generated:", solution.num_cuts)
+    print("No. of optimality cuts generated:", solution.num_cuts_mip)
+    print("No. of optimality cuts generated (at node relaxation):", solution.num_cuts_rel)
     print("No. of explored Branch-and-Bound nodes:", solution.num_bnb_nodes)

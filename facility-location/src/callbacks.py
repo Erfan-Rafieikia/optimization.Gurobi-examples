@@ -31,7 +31,8 @@ class Callback:
         self.y = y
         self.eta = eta
 
-        self.num_cuts = 0  # number of optimality cuts added
+        self.num_cuts_mip = 0  # number of optimality cuts added
+        self.num_cuts_rel = 0  # number of optimality cuts added (at node relaxation)
 
     def __call__(self, mod, where):
         """
@@ -59,7 +60,36 @@ class Callback:
             # the estimated cost (eta)
             if obj > eta_value:
                 self.add_optimality_cut(mod, mu, nu)
-                self.num_cuts += 1
+                self.num_cuts_mip += 1
+
+        # Currently exploring a MIP node
+        elif where == GRB.Callback.MIPNODE:
+            # Get the number of nodes explored
+            node_count = mod.cbGet(GRB.Callback.MIPNODE_NODCNT)
+
+            # Message when leaving the root node
+            if node_count == 1:
+                print("Completed solving the root node. Proceeding with branch-and-bound...")
+
+            status = mod.cbGet(GRB.Callback.MIPNODE_STATUS)
+            # Check if the node is optimal
+            if status != GRB.OPTIMAL:
+                # Relaxation solution for the current node is not valid
+                # if there is no optimal solution
+                return
+
+            # Get the current solution (lp-relaxation)
+            y_values = mod.cbGetNodeRel(self.y)
+            eta_value = mod.cbGetNodeRel(self.eta)
+
+            # Solve the subproblem and obtain its dual information
+            obj, mu, nu = solve_subproblem(self.dat, y_values)
+
+            # Add an optimality cut if the subproblem objective value is greater than
+            # the estimated cost (eta)
+            if obj > eta_value:
+                self.add_optimality_cut(mod, mu, nu)
+                self.num_cuts_rel += 1
 
     def add_optimality_cut(self, mod, mu, nu):
         """
