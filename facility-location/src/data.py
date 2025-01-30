@@ -2,51 +2,71 @@ from dataclasses import dataclass
 
 import numpy as np
 
-SEED = 2024  # random seed for reproducibility
-
-DEMANDS = (1, 100)  # the range of customer demands
-CAPACITIES = (500, 1000)  # the range of facility capacities
-FIXED_COSTS = (2000, 5000)  # the range of facility fixed costs
-SHIPMENT_COSTS = (1, 10)  # the range of shipment costs
-
 
 @dataclass
 class Data:
-    I: np.ndarray  # customer index list
-    J: np.ndarray  # facility index list
-    demands: np.ndarray  # customer demands (integers)
-    capacities: np.ndarray  # facility capacities (integers)
-    fixed_costs: np.ndarray  # facility opening costs (floats)
-    shipment_costs: np.ndarray  # transshipment costs (floats)
+    I: np.ndarray  # Customer index list
+    J: np.ndarray  # Facility index list
+    demands: np.ndarray  # Customer demands
+    capacities: np.ndarray  # Facility capacities
+    fixed_costs: np.ndarray  # Facility opening costs
+    shipment_costs: np.ndarray  # Transportation costs
 
 
-def generate_random_instance(num_customers, num_facilities):
+def word_reader(file_path):
+    with open(file_path, "r") as file:
+        for line in file:
+            for word in line.split():
+                yield word
+
+
+def read_dataset(file_path):
     """
-    Generate a random instance for the capacitated facility location problem.
+    Reads a dataset for the capacitated facility location problem.
 
     Args:
-        num_customers (int): Number of customers
-        num_facilities (int): Number of facilities
+        file_path (str): Path to the dataset file.
 
     Returns:
         Data: A Data object containing the instance information.
     """
+    word = word_reader(file_path)
 
-    np.random.seed(SEED)
+    # Read the number of facilities and customers
+    num_facilities = int(next(word))
+    num_customers = int(next(word))
 
-    I = np.arange(num_customers)
-    J = np.arange(num_facilities)
+    # Read facility capacities and fixed costs
+    capacities = []
+    fixed_costs = []
+    for _ in range(num_facilities):
+        capacity = int(next(word))
+        fixed_cost = int(next(word))
+        capacities.append(capacity)
+        fixed_costs.append(fixed_cost)
 
-    demands = np.random.randint(low=DEMANDS[0], high=DEMANDS[1] + 1, size=num_customers)
-    capacities = np.random.randint(low=CAPACITIES[0], high=CAPACITIES[1] + 1, size=num_facilities)
-    fixed_costs = np.random.uniform(
-        low=FIXED_COSTS[0], high=FIXED_COSTS[1], size=num_facilities
-    ).round(2)
+    demands = np.array([float(next(word)) for _ in range(num_customers)])
 
-    # Create a cost matrix
-    shipment_costs = np.random.uniform(
-        low=SHIPMENT_COSTS[0], high=SHIPMENT_COSTS[1], size=(num_customers, num_facilities)
-    ).round(2)
+    # Read transportation costs as an m x n matrix
+    shipment_costs = np.array(
+        [float(next(word)) for _ in range(num_facilities * num_customers)]
+    ).reshape(num_facilities, num_customers)
+
+    shipment_costs = np.transpose(shipment_costs)
+
+    # Convert data to numpy arrays
+    I = np.arange(num_customers)  # Customer indices
+    J = np.arange(num_facilities)  # Facility indices
+    capacities = np.array(capacities)
+    fixed_costs = np.array(fixed_costs)
+
+    # Print the loaded data for verification
+    print(f"Customer indices (I): {I}")
+    print(f"Facility indices (J): {J}")
+    print(f"Customer demands: {demands}")
+    print(f"Facility capacities: {capacities}")
+    print(f"Facility fixed costs: {fixed_costs}")
+    print(f"Shipment costs matrix:\n{shipment_costs}")
 
     return Data(
         I=I,
