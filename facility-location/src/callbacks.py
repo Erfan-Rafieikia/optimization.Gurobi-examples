@@ -74,8 +74,9 @@ class Callback:
             status = mod.cbGet(GRB.Callback.MIPNODE_STATUS)
             # Check if the node is optimal
             if status != GRB.OPTIMAL:
-                # Relaxation solution for the current node is not valid
-                # if there is no optimal solution
+                # Relaxation solution for the current node is not valid meaning either infeasible or unbounded
+                #then don't use the the values for creating cuts
+                #So, it goes to return and exists and does not execute any of the following lines
                 return
 
             # Get the current solution (lp-relaxation)

@@ -29,7 +29,8 @@ def solve_subproblem(dat: Data, facility_open: tupledict) -> tuple:
         _set_params(mod)
 
         # Decision variables for shipment quantities from facilities to customers
-        x = mod.addVars(dat.I, dat.J, name="x")
+        ##My modificatin for assignment is making x a binary variable.
+        x = mod.addVars(dat.I, dat.J,vtype=GRB.BINARY, name="x")
 
         # Objective: Minimize total shipment costs
         total_cost = quicksum(dat.shipment_costs[i, j] * x[i, j] for i in dat.I for j in dat.J)
